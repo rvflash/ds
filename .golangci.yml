@@ -1,0 +1,29 @@
+linters:
+  enable-all: true
+  disable:
+    - wsl
+    - godox
+    - gomnd
+
+issues:
+  exclude-use-default: false
+  exclude-rules:
+    - path: _test\.go
+      linters:
+        - gomnd
+        - gochecknoglobals
+        - funlen
+        - dupl
+        - gosec
+    - path: main\.go
+      text: "`buildVersion` is a global variable"
+      linters:
+        - gochecknoglobals
+    - path: internal/mysql/data_type\.go
+      text: "Function 'Size' has too many statements"
+      linters:
+        - funlen
+    - path: internal/mysql/charset.go
+      text: "`charsets` is a global variable"
+      linters:
+        - gochecknoglobals
