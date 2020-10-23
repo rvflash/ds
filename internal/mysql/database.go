@@ -78,6 +78,7 @@ func (t *Table) addKeys(spec *sqlparser.TableSpec) (err error) {
 	if spec == nil || len(spec.Indexes) == 0 {
 		return
 	}
+
 	for _, k := range spec.Indexes {
 		var (
 			name string
@@ -89,7 +90,7 @@ func (t *Table) addKeys(spec *sqlparser.TableSpec) (err error) {
 		if k.Info != nil {
 			name = k.Info.Name.String()
 		}
-		err = t.addKey(name, cols)
+		err = t.addKey(name, cols, primary(k.Info))
 		if err != nil {
 			return
 		}
@@ -97,7 +98,14 @@ func (t *Table) addKeys(spec *sqlparser.TableSpec) (err error) {
 	return
 }
 
-func (t *Table) addKey(name string, columns []string) error {
+func primary(info *sqlparser.IndexInfo) bool {
+	if info == nil {
+		return false
+	}
+	return info.Primary
+}
+
+func (t *Table) addKey(name string, columns []string, primary bool) error {
 	cols := t.columnsNamed(columns)
 	if len(cols) == 0 {
 		return fmt.Errorf("key's columns: %w", ds.ErrInvalid)
@@ -105,6 +113,7 @@ func (t *Table) addKey(name string, columns []string) error {
 	t.Keys = append(t.Keys, Key{
 		Name:    name,
 		Columns: cols,
+		Primary: primary,
 	})
 	return nil
 }
@@ -170,6 +179,7 @@ func (c Column) String() string {
 type Key struct {
 	Name    string
 	Columns []Column
+	Primary bool
 }
 
 // Size implements the ds.Data interface.
@@ -186,8 +196,8 @@ func (k Key) Size() (min, max uint64) {
 // Kind implements the ds.Data interface.
 func (k Key) Kind() string {
 	names := make([]string, len(k.Columns))
-	for k, v := range k.Columns {
-		names[k] = v.String()
+	for p, v := range k.Columns {
+		names[p] = v.String()
 	}
 	if len(names) == 0 {
 		return ""
