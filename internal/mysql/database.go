@@ -9,6 +9,7 @@ import (
 	"strings"
 
 	"github.com/rvflash/ds/pkg/ds"
+	"github.com/xwb1989/sqlparser"
 )
 
 // DefaultDatabaseName is the name used by default for a database.
@@ -52,19 +53,6 @@ type Table struct {
 	Keys    []Key
 }
 
-// AddKey tries to add this table's key.
-func (t *Table) AddKey(name string, columns []string) error {
-	cols := t.columnsNamed(columns)
-	if len(cols) == 0 {
-		return fmt.Errorf("key's columns: %w", ds.ErrInvalid)
-	}
-	t.Keys = append(t.Keys, Key{
-		Name:    name,
-		Columns: cols,
-	})
-	return nil
-}
-
 // Kind implements the ds.Data interface.
 func (Table) Kind() string {
 	return "TABLE"
@@ -85,6 +73,42 @@ func (t Table) Size() (min, max uint64) {
 	}
 	return
 }
+
+func (t *Table) addKeys(spec *sqlparser.TableSpec) (err error) {
+	if spec == nil || len(spec.Indexes) == 0 {
+		return
+	}
+	for _, k := range spec.Indexes {
+		var (
+			name string
+			cols = make([]string, len(k.Columns))
+		)
+		for p, c := range k.Columns {
+			cols[p] = c.Column.String()
+		}
+		if k.Info != nil {
+			name = k.Info.Name.String()
+		}
+		err = t.addKey(name, cols)
+		if err != nil {
+			return
+		}
+	}
+	return
+}
+
+func (t *Table) addKey(name string, columns []string) error {
+	cols := t.columnsNamed(columns)
+	if len(cols) == 0 {
+		return fmt.Errorf("key's columns: %w", ds.ErrInvalid)
+	}
+	t.Keys = append(t.Keys, Key{
+		Name:    name,
+		Columns: cols,
+	})
+	return nil
+}
+
 func (t *Table) columnIndex(name string) int {
 	for i, c := range t.Columns {
 		if c.Name == name {

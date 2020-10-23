@@ -40,11 +40,11 @@ func Parse(r io.Reader) (Storage, error) {
 			case sqlparser.CreateStr:
 				err = dbs.createTable(cur, stmt)
 			case sqlparser.AlterStr:
-				err = dbs.AlterTable(cur, stmt)
+				err = dbs.alterTable(cur, stmt)
 			case sqlparser.DropStr:
-				err = dbs.DropTable(cur, stmt)
+				err = dbs.dropTable(cur, stmt)
 			case sqlparser.RenameStr:
-				err = dbs.RenameTable(cur, stmt)
+				err = dbs.renameTable(cur, stmt)
 			}
 			if err != nil {
 				return nil, err

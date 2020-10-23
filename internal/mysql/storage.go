@@ -47,7 +47,7 @@ func (s Storage) createTable(dbName string, stmt *sqlparser.DDL) error {
 		Name:    stmt.NewName.Name.String(),
 		Columns: columns(stmt.TableSpec, s[i].Charset),
 	}
-	err = t.AddKey(keys(stmt.TableSpec))
+	err = t.addKeys(stmt.TableSpec)
 	if err != nil {
 		return err
 	}
@@ -84,23 +84,8 @@ func columns(spec *sqlparser.TableSpec, dbCharset string) []Column {
 	return res
 }
 
-func keys(spec *sqlparser.TableSpec) (name string, columns []string) {
-	if spec == nil || len(spec.Indexes) == 0 {
-		return "", nil
-	}
-	for _, k := range spec.Indexes {
-		for _, c := range k.Columns {
-			columns = append(columns, c.Column.String())
-		}
-		if k.Info != nil {
-			name = k.Info.Name.String()
-		}
-	}
-	return
-}
-
-// AlterTable tries to alter this database's table.
-func (s Storage) AlterTable(dbName string, stmt *sqlparser.DDL) error {
+// alterTable tries to alter this database's table.
+func (s Storage) alterTable(dbName string, _ *sqlparser.DDL) error {
 	_, err := s.get(dbName)
 	if err != nil {
 		return err
@@ -108,8 +93,8 @@ func (s Storage) AlterTable(dbName string, stmt *sqlparser.DDL) error {
 	return nil
 }
 
-// DropTable tries to drop this database's table.
-func (s Storage) DropTable(dbName string, stmt *sqlparser.DDL) error {
+// dropTable tries to drop this database's table.
+func (s Storage) dropTable(dbName string, _ *sqlparser.DDL) error {
 	_, err := s.get(dbName)
 	if err != nil {
 		return err
@@ -117,8 +102,8 @@ func (s Storage) DropTable(dbName string, stmt *sqlparser.DDL) error {
 	return nil
 }
 
-// RenameTable tries to rename this database's table.
-func (s Storage) RenameTable(dbName string, stmt *sqlparser.DDL) error {
+// renameTable tries to rename this database's table.
+func (s Storage) renameTable(dbName string, _ *sqlparser.DDL) error {
 	_, err := s.get(dbName)
 	if err != nil {
 		return err
