@@ -45,7 +45,7 @@ type Configurator func(*Estimator) error
 func SetPerN(i uint64) Configurator {
 	return func(e *Estimator) error {
 		if i == 0 {
-			return fmt.Errorf("per N: %w", ds.ErrMissing)
+			return ds.WrapErr("per N value", ds.ErrMissing)
 		}
 		e.perN = i
 		return nil
@@ -56,7 +56,7 @@ func SetPerN(i uint64) Configurator {
 func SetPrecision(i uint64) Configurator {
 	return func(e *Estimator) error {
 		if i > math.MaxUint8 {
-			return fmt.Errorf("presision: %w", ds.ErrInvalid)
+			return ds.WrapErr("precision", ds.ErrInvalid)
 		}
 		e.precision = uint8(i)
 		return nil
@@ -127,6 +127,9 @@ func (e *Estimator) Run(r io.Reader, w io.Writer) error {
 				}
 			}
 			res = append(res, e.row(t))
+			if e.verbose {
+				res = append(res, e.blank())
+			}
 		}
 		res = append(res, e.row(d))
 	}
@@ -151,6 +154,10 @@ func (e *Estimator) batchRender(writer io.Writer, data [][]string) error {
 	}
 	w.Flush()
 	return w.Error()
+}
+
+func (e *Estimator) blank() []string {
+	return make([]string, len(e.header()))
 }
 
 func (e *Estimator) header() []string {

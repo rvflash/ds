@@ -9,9 +9,9 @@ import (
 	"strings"
 )
 
-// NewDataType returns a MySQL DataType based on the given data name.
-func NewDataType(s string) DataType {
-	return DataType(strings.ToUpper(s))
+// ToDataType returns a MySQL DataType based on the given data name.
+func ToDataType(s string) DataType {
+	return DataType(strings.ToLower(s))
 }
 
 // DataType represents a MySQL data type.
@@ -19,44 +19,87 @@ type DataType string
 
 // List of supported MySQL data types.
 const (
-	Bit        DataType = "BIT"
-	TinyInt    DataType = "TINYINT"
-	SmallInt   DataType = "SMALLINT"
-	MediumInt  DataType = "MEDIUMINT"
-	Int        DataType = "INT"
-	Integer    DataType = "INTEGER"
-	BigInt     DataType = "BIGINT"
-	Float      DataType = "FLOAT"
-	Double     DataType = "DOUBLE"
-	Decimal    DataType = "DECIMAL"
-	Numeric    DataType = "NUMERIC"
-	Real       DataType = "REAL"
-	Year       DataType = "YEAR"
-	Date       DataType = "DATE"
-	Time       DataType = "TIME"
-	Timestamp  DataType = "TIMESTAMP"
-	DateTime   DataType = "DATETIME"
-	Char       DataType = "CHAR"
-	Binary     DataType = "BINARY"
-	VarChar    DataType = "VARCHAR"
-	VarBinary  DataType = "VARBINARY"
-	TinyBlob   DataType = "TINYBLOB"
-	TinyText   DataType = "TINYTEXT"
-	Blob       DataType = "BLOB"
-	Text       DataType = "TEST"
-	MediumBlob DataType = "MEDIUMBLOB"
-	MediumText DataType = "MEDIUMTEXT"
-	LongBlob   DataType = "LONGBLOB"
-	LongText   DataType = "LONGTEXT"
-	JSON       DataType = "JSON"
-	Enum       DataType = "ENUM"
-	Set        DataType = "SET"
+	Bit        DataType = "bit"
+	TinyInt    DataType = "tinyint"
+	SmallInt   DataType = "smallint"
+	MediumInt  DataType = "mediumint"
+	Int        DataType = "int"
+	Integer    DataType = "integer"
+	BigInt     DataType = "bigint"
+	Float      DataType = "float"
+	Double     DataType = "double"
+	Decimal    DataType = "decimal"
+	Numeric    DataType = "numeric"
+	Real       DataType = "real"
+	Year       DataType = "year"
+	Date       DataType = "date"
+	Time       DataType = "time"
+	Timestamp  DataType = "timestamp"
+	DateTime   DataType = "datetime"
+	Char       DataType = "char"
+	Binary     DataType = "binary"
+	VarChar    DataType = "varchar"
+	VarBinary  DataType = "varbinary"
+	TinyBlob   DataType = "tinyblob"
+	TinyText   DataType = "tinytext"
+	Blob       DataType = "blob"
+	Text       DataType = "test"
+	MediumBlob DataType = "mediumblob"
+	MediumText DataType = "mediumtext"
+	LongBlob   DataType = "longblob"
+	LongText   DataType = "longtext"
+	JSON       DataType = "json"
+	Enum       DataType = "enum"
+	Set        DataType = "set"
 )
 
 // Kind implements the ds.Data interface.
 func (DataType) Kind() string {
 	return ""
 }
+
+// IsInt returns true if the data type is an integer.
+func (d DataType) IsInt() bool {
+	switch d {
+	case
+		TinyInt, SmallInt, MediumInt, Int, BigInt:
+		return true
+	default:
+		return false
+	}
+}
+
+// IsString returns true if the data type is a string.
+func (d DataType) IsString() bool {
+	switch d {
+	case
+		Char, Binary,
+		VarChar, VarBinary,
+		TinyBlob, MediumBlob, Blob, LongBlob,
+		TinyText, MediumText, Text, LongText,
+		Enum, Set,
+		JSON:
+		return true
+	default:
+		return false
+	}
+}
+
+// IsVar returns true if the data type is a variable one.
+func (d DataType) IsVar() bool {
+	switch d {
+	case
+		VarChar, VarBinary,
+		TinyBlob, MediumBlob, Blob, LongBlob,
+		TinyText, MediumText, Text, LongText,
+		JSON:
+		return true
+	default:
+		return false
+	}
+}
+
+const maxMediumSize = 16777216
 
 // Size returns the required storage of the data type for this requested size in bytes and charset.
 // It implements the ds.Data interface.
@@ -99,7 +142,7 @@ func (d DataType) Size(size uint64, charset string) (min, max uint64) {
 	case Blob, Text:
 		return blob(bytes(size, charset), 2, math.MaxUint16)
 	case MediumBlob, MediumText:
-		return blob(bytes(size, charset), 3, 16777216)
+		return blob(bytes(size, charset), 3, maxMediumSize)
 	case LongBlob, LongText, JSON:
 		return blob(bytes(size, charset), 4, math.MaxUint32)
 	case Enum:

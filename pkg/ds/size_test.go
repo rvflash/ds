@@ -24,6 +24,7 @@ func TestHumanSize(t *testing.T) {
 			{in: math.MaxUint16, out: "65 KB"},
 			{in: math.MaxUint32, out: "4 GB"},
 			{in: math.MaxUint64, decimal: 3, out: "18446744.073 TB"},
+			{in: 10240, decimal: 2, out: "10.24 KB"},
 			{in: 425005, decimal: 2, out: "425.00 KB"},
 			{in: 8741208, decimal: 2, out: "8.74 MB"},
 			{in: 114448910, decimal: 2, out: "114.44 MB"},

@@ -26,7 +26,7 @@ CREATE TABLE `site` (
 DROP TABLE IF EXISTS `action`;
 
 CREATE TABLE `action` (
-  `action_id` bigint(20) NOT NULL AUTO_INCREMENT,
+  `action_id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `org_id` int(11) NOT NULL,
   `product_name` enum('P1','P2','P3') COLLATE utf8_unicode_ci NOT NULL,
   `user_id` int(11) NOT NULL,

@@ -4,8 +4,20 @@
 
 package mysql
 
+import "strings"
+
 // DefaultCharset is the default charset used as fail over in any charset is provided.
 const DefaultCharset = "utf8mb4"
+
+// Charset returns the first non empty string in the list or the default charset as failover.
+func Charset(sets ...string) string {
+	for _, s := range sets {
+		if s != "" {
+			return strings.ToLower(s)
+		}
+	}
+	return DefaultCharset
+}
 
 // Source: https://dev.mysql.com/doc/refman/8.0/en/charset-charsets.html.
 var charsets = map[string]uint8{

@@ -66,6 +66,7 @@ $ cat testdata/mysql/sample.sql | ds mysql -n 1000000
 
 ### Features
 
+- Supports the MySQL and InnoDB engines specificities.
 - Supports various statements `CREATE DATABASE`, `DROP DATABASE` or `CREATE TABLE`.
 - The charset is takes account in the computation. 
 If no one is defined on the table, the database's charset is used as failover, otherwise `utf8mb4` is used.  

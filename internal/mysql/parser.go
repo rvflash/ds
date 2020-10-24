@@ -10,11 +10,14 @@ import (
 	"github.com/xwb1989/sqlparser"
 )
 
+// defaultDatabaseName is the name used by default for a database.
+const defaultDatabaseName = "unknown"
+
 // Parse parses the given SQL statements as MySQL queries.
 // It tries to convert it as a Storage.
 func Parse(r io.Reader) (Storage, error) {
 	var (
-		cur = DefaultDatabaseName
+		cur = defaultDatabaseName
 		dbs = Storage{}
 		tkz = sqlparser.NewTokenizer(r)
 	)
@@ -33,7 +36,7 @@ func Parse(r io.Reader) (Storage, error) {
 			}
 		case *sqlparser.DDL:
 			// By default, if no database are specified, we use a default one to wrap any tables.
-			if cur == DefaultDatabaseName {
+			if cur == defaultDatabaseName {
 				dbs, cur = dbs.addDatabase(cur, DefaultCharset)
 			}
 			switch stmt.Action {

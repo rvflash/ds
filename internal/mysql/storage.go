@@ -8,6 +8,7 @@ package mysql
 import (
 	"fmt"
 	"strconv"
+	"strings"
 
 	"github.com/rvflash/ds/pkg/ds"
 	"github.com/xwb1989/sqlparser"
@@ -43,11 +44,18 @@ func (s Storage) createTable(dbName string, stmt *sqlparser.DDL) error {
 	if err != nil {
 		return err
 	}
+	opts := options(stmt.TableSpec)
 	t := Table{
-		Name:    stmt.NewName.Name.String(),
-		Columns: columns(stmt.TableSpec, s[i].Charset),
+		Columns:   columns(stmt.TableSpec, s[i].Charset),
+		Engine:    ToEngine(opts[engine]),
+		Name:      stmt.NewName.Name.String(),
+		RowFormat: ToRowFormat(opts[rowFormat]),
 	}
 	err = t.addKeys(stmt.TableSpec)
+	if err != nil {
+		return err
+	}
+	err = t.Analyze()
 	if err != nil {
 		return err
 	}
@@ -55,14 +63,28 @@ func (s Storage) createTable(dbName string, stmt *sqlparser.DDL) error {
 	return nil
 }
 
-// charset returns the first non empty string in the list or the default charset by default.
-func charset(s ...string) string {
-	for _, v := range s {
-		if v != "" {
-			return v
+const (
+	engine    = "engine"
+	rowFormat = "row_format"
+
+	equal = "="
+	pair  = 2
+	space = " "
+)
+
+// parses table spec (ex: engine=InnoDB default charset=latin1) to build kv options.
+func options(spec *sqlparser.TableSpec) map[string]string {
+	if spec == nil || spec.Options == "" {
+		return nil
+	}
+	res := make(map[string]string)
+	for _, s := range strings.Split(spec.Options, space) {
+		kv := strings.SplitN(s, equal, pair)
+		if len(kv) == pair {
+			res[strings.ToLower(kv[0])] = kv[1]
 		}
 	}
-	return DefaultCharset
+	return res
 }
 
 func columns(spec *sqlparser.TableSpec, dbCharset string) []Column {
@@ -73,8 +95,9 @@ func columns(spec *sqlparser.TableSpec, dbCharset string) []Column {
 	for k, v := range spec.Columns {
 		c := Column{
 			Name:     v.Name.String(),
-			Charset:  charset(v.Type.Charset, dbCharset),
-			DataType: NewDataType(v.Type.Type),
+			Charset:  Charset(v.Type.Charset, dbCharset),
+			DataType: ToDataType(v.Type.Type),
+			NotNull:  bool(v.Type.NotNull),
 		}
 		if v.Type.Length != nil {
 			c.DataSize, _ = strconv.ParseUint(string(v.Type.Length.Val), base10, bits64)

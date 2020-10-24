@@ -4,6 +4,8 @@
 
 package ds
 
+import "fmt"
+
 // Error represents an error.
 type Error string
 
@@ -21,3 +23,8 @@ const (
 	// ErrMissing is returned  when the data is missing.
 	ErrMissing = Error("missing data")
 )
+
+// WrapErr wraps the error with the given message.
+func WrapErr(msg string, err error) error {
+	return fmt.Errorf("%s: %w", msg, err)
+}
