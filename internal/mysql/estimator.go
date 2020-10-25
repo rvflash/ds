@@ -116,13 +116,16 @@ func (e *Estimator) Run(r io.Reader, w io.Writer) error {
 		return ds.ErrMissing
 	}
 	res := make([][]string, 0)
-	for _, d := range dbs {
+	for p, d := range dbs {
+		if p > 0 && e.verbose {
+			res = append(res, e.blank())
+		}
 		for _, t := range d.Tables {
 			if e.verbose {
-				for _, c := range t.Columns {
+				for _, c := range t.Fields() {
 					res = append(res, e.row(c))
 				}
-				for _, k := range t.Keys {
+				for _, k := range t.Keys() {
 					res = append(res, e.row(k))
 				}
 			}

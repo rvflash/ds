@@ -32,47 +32,50 @@ mysql> desc city;
 5 rows in set (0.00 sec)
  ```
 
-With the same file, we can estimate its size per one, and a million rows and print details per column or key:
+With the same file, we can estimate its size per one, and a million rows.
+See the following command line which also prints details per column or key (verbose mode):
 
 ```
 $ ds mysql -v -n 1000000 testdata/mysql/sample.sql 
-+--------------+-------------------+---------------+---------------+-----------------+-----------------+
-| DATA         | TYPE              | PER ROW (MIN) | PER ROW (MAX) | X 1000000 (MIN) | X 1000000 (MAX) |
-+--------------+-------------------+---------------+---------------+-----------------+-----------------+
-| id           | INT(11)           |        4.00 B |        4.00 B |         4.00 MB |         4.00 MB |
-| name         | CHAR(35)          |       35.00 B |       35.00 B |        35.00 MB |        35.00 MB |
-| country_code | CHAR(3)           |        3.00 B |        3.00 B |         3.00 MB |         3.00 MB |
-| district     | CHAR(20)          |       20.00 B |       20.00 B |        20.00 MB |        20.00 MB |
-| population   | INT(11)           |        4.00 B |        4.00 B |         4.00 MB |         4.00 MB |
-| PRIMARY      | KEY(id)           |        4.00 B |        4.00 B |         4.00 MB |         4.00 MB |
-| country_code | KEY(country_code) |        7.00 B |        7.00 B |         7.00 MB |         7.00 MB |
-| city         | TABLE             |       77.00 B |       77.00 B |        77.00 MB |        77.00 MB |
-| country      | DATABASE          |       77.00 B |       77.00 B |        77.00 MB |        77.00 MB |
-+--------------+-------------------+---------------+---------------+-----------------+-----------------+
++--------------+------------------------+---------------+---------------+-----------------+-----------------+
+| DATA         | TYPE                   | PER ROW (MIN) | PER ROW (MAX) | X 1000000 (MIN) | X 1000000 (MAX) |
++--------------+------------------------+---------------+---------------+-----------------+-----------------+
+| id           | int                    |        4.00 B |        4.00 B |         4.00 MB |         4.00 MB |
+| name         | char(35, utf8mb4)      |       35.00 B |       35.00 B |        35.00 MB |        35.00 MB |
+| country_code | char(3, utf8mb4)       |        3.00 B |        3.00 B |         3.00 MB |         3.00 MB |
+| district     | char(20, utf8mb4)      |       20.00 B |       20.00 B |        20.00 MB |        20.00 MB |
+| population   | int                    |        4.00 B |        4.00 B |         4.00 MB |         4.00 MB |
+| PRIMARY      | key(id)                |        4.00 B |        4.00 B |         4.00 MB |         4.00 MB |
+| country_code | key(country_code)      |        7.00 B |        7.00 B |         7.00 MB |         7.00 MB |
+| city         | table(InnoDB, dynamic) |       77.00 B |       77.00 B |        77.00 MB |        77.00 MB |
+|              |                        |               |               |                 |                 |
+| country      | database               |       77.00 B |       77.00 B |        77.00 MB |        77.00 MB |
++--------------+------------------------+---------------+---------------+-----------------+-----------------+
 ```
 
 Without the verbose mode, only tables with aggregates by database are displayed.
 
 ```
 $ cat testdata/mysql/sample.sql | ds mysql -n 1000000 
-+---------+----------+---------------+---------------+-----------------+-----------------+
-| DATA    | TYPE     | PER ROW (MIN) | PER ROW (MAX) | X 1000000 (MIN) | X 1000000 (MAX) |
-+---------+----------+---------------+---------------+-----------------+-----------------+
-| city    | TABLE    |       77.00 B |       77.00 B |        77.00 MB |        77.00 MB |
-| country | DATABASE |       77.00 B |       77.00 B |        77.00 MB |        77.00 MB |
-+---------+----------+---------------+---------------+-----------------+-----------------+
++---------+------------------------+---------------+---------------+-----------------+-----------------+
+| DATA    | TYPE                   | PER ROW (MIN) | PER ROW (MAX) | X 1000000 (MIN) | X 1000000 (MAX) |
++---------+------------------------+---------------+---------------+-----------------+-----------------+
+| city    | table(InnoDB, dynamic) |       77.00 B |       77.00 B |        77.00 MB |        77.00 MB |
+| country | database               |       77.00 B |       77.00 B |        77.00 MB |        77.00 MB |
++---------+------------------------+---------------+---------------+-----------------+-----------------+
 ```
 
 
 ### Features
 
-- Supports the MySQL and InnoDB engines specificities.
-- Supports various statements `CREATE DATABASE`, `DROP DATABASE` or `CREATE TABLE`.
+- Supports MyISAM engine with Static (Fixed-Length), Dynamic and Compressed table characteristics.
+- Supports InnoDB engine with Redundant, Compact, Dynamic and Compressed row formats.
+- Supports various statements `CREATE DATABASE`, `DROP DATABASE` or `CREATE TABLE`. More incoming!
 - The charset is takes account in the computation. 
 If no one is defined on the table, the database's charset is used as failover, otherwise `utf8mb4` is used.  
 - Display the minimum and maximum sizes estimations to handle variable data types.
 - Data sizes are calculated per column, per key, per table and per database.
-- Even if not specified, results are aggregated by database, named `unknown` by default.
+- Results are aggregated by database. If not specified, `unknown` name is used by default.
 
 
 ### Usage

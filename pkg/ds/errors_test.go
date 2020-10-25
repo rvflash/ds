@@ -5,6 +5,8 @@
 package ds_test
 
 import (
+	"errors"
+	"strings"
 	"testing"
 
 	"github.com/matryer/is"
@@ -31,4 +33,14 @@ func TestError_Error(t *testing.T) {
 			are.Equal(tt.err.Error(), tt.msg) // mismatch message
 		})
 	}
+}
+
+func TestWrapErr(t *testing.T) {
+	const msg = "table"
+	var (
+		are = is.New(t)
+		err = ds.WrapErr(msg, ds.ErrInvalid)
+	)
+	are.True(errors.Is(err, ds.ErrInvalid))       // mismatch error
+	are.True(strings.HasPrefix(err.Error(), msg)) // mismatch error message
 }
