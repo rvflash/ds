@@ -47,7 +47,7 @@ jobs:
         run: echo ::set-env name=APP_VERSION::${GITHUB_REF##*/}
       - uses: actions/checkout@v2.0.0
       - name: Publish to Registry
-        uses: elgohr/Publish-Docker-Github-Action@master
+        uses: elgohr/Publish-Docker-Github-Action@v5
         env:
           APP_VERSION: ${{env.APP_VERSION}}
         with:
